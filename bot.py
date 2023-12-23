@@ -77,6 +77,7 @@ HELP_MSG = """
 <em>/get_stats</em> - check your stats
 <em>/get_paths</em> - check available locations
 <em>/set_xp *number*</em> - set your XP
+<em>/move *number*</em> - move to available location
 """
 
 LOCATIONS = {0: {'name': "Start_location", 'coords': (
@@ -92,18 +93,22 @@ TOKEN = "6726992834:AAGDQBLGSVaIxpLFErLSnE6qzNpIZ_7IceQ"
 # All handlers should be attached to the Router (or Dispatcher)
 dp = Dispatcher()
 
-
-def search_tele_id(user_id, nickname):
-    connection = sqlite3.connect('test.db')
-    cur = connection.cursor()
-
+def check_player(connection, cur, user_id, nickname):
     find_login = cur.execute(
         "SELECT Nickname FROM Person WHERE UserID = ?", (user_id, ))
     if (find_login.fetchone() == None):
         cur.execute("""INSERT INTO Person VALUES
                     (?, ?, 0, 100, 100, 50, 10, 30, 0, 1, 0, 0, 0, 0, 0)
                     """, (user_id, nickname, ))
+    connection.commit()
 
+def search_tele_id(user_id, nickname):
+    connection = sqlite3.connect('test.db')
+    cur = connection.cursor()
+    check_player(connection, cur, user_id, nickname)
+    connection.close()
+    return True
+    
     #     Level INT,
     # HP INT,
     # CurHP INT,
@@ -115,11 +120,7 @@ def search_tele_id(user_id, nickname):
     # MagicArmour INT,
     # LocationID INT
 
-        connection.commit()
-        connection.close()
-        return False
-    connection.close()
-    return True
+   
 
 
 @dp.message(CommandStart())
@@ -140,6 +141,7 @@ async def command_start_handler(message: Message, command: CommandObject) -> Non
         if (len(args) == 1 and args[0].isdigit()):
             connection = sqlite3.connect('test.db')
             cur = connection.cursor()
+            check_player(connection, cur, message.from_user.id, message.from_user.nickname)
             cur.execute("UPDATE Person SET XP = ?, Level = ? WHERE UserID = ?", (int(
                 args[0]), int(args[0]) // 100, message.from_user.id, ))
             connection.commit()
@@ -157,6 +159,7 @@ async def command_start_handler(message: Message, command: CommandObject) -> Non
 
         connection = sqlite3.connect('test.db')
         cur = connection.cursor()
+        check_player(connection, cur, message.from_user.id, message.from_user.nickname)
         location_id = cur.execute(
             "SELECT LocationID FROM Person WHERE UserID = ?", (message.from_user.id, )).fetchone()[0]
         connection.commit()
@@ -190,6 +193,7 @@ async def command_start_handler(message: Message, command: CommandObject) -> Non
 async def command_start_handler(message: Message) -> None:
     connection = sqlite3.connect('test.db')
     cur = connection.cursor()
+    check_player(connection, cur, message.from_user.id, message.from_user.nickname)
     stats = cur.execute(
         "SELECT Level, HP, CurHP, Money, Attack, MagicAttack, XP, Armour, MagicArmour, LocationID FROM Person WHERE UserID = ?", (message.from_user.id, )).fetchone()
     connection.commit()
@@ -201,6 +205,7 @@ async def command_start_handler(message: Message) -> None:
 async def command_start_handler(message: Message) -> None:
     connection = sqlite3.connect('test.db')
     cur = connection.cursor()
+    check_player(connection, cur, message.from_user.id, message.from_user.nickname)
     location_id = cur.execute(
         "SELECT LocationID FROM Person WHERE UserID = ?", (message.from_user.id, )).fetchone()[0]
     connection.commit()
