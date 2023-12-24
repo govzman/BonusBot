@@ -80,12 +80,16 @@ HELP_MSG = """
 <em>/move *location*</em> - move to available location
 """
 
-LOCATIONS = {0: {'name': "Start_location", 'coords': (
-    0, 0)}, 1: {'name': "Moscow_City", 'coords': (0, 3)}}
+LOCATIONS = {0: {'name': "Start_location", 'coords': (0, 0)},
+            1: {'name': "Moscow_City", 'coords': (0, 3)},
+            2: {'name': "London", 'coords': (4, 2)},
+            3: {'name': "Himki", 'coords': (-10, 10)},
+            4: {'name': 'Red_Square', 'coords': (0, 20)}
+            }
 
-LOCATIONS_ID = {'Start_location': 0, 'Moscow_City': 1}
+LOCATIONS_ID = {'Start_location': 0, 'Moscow_City': 1, "London": 2, "Himki": 3, "Red_Square": 4}
 
-PATHS = {0: [1], 1: [0]}
+PATHS = {0: [1, 2, 3], 1: [0, 3, 4], 2: [0], 3: [0, 1, 4], 4: [1, 3]}
 
 # Bot token can be obtained via https://t.me/BotFather
 TOKEN = "6726992834:AAGDQBLGSVaIxpLFErLSnE6qzNpIZ_7IceQ"
